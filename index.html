@@ -1,0 +1,673 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trắc nghiệm</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #f4f6f9;
+    margin: 0;
+    padding: 20px;
+    font-size: 18px; /* 🔥 thêm */
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+}
+
+h2 {
+    text-align: center;
+    font-size: 22px; /* 🔥 to hơn */
+}
+
+.question {
+    background: #fff;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    font-size: 17px; /* 🔥 thêm */
+}
+
+button {
+    width: 100%;
+    margin: 6px 0;
+    padding: 12px; /* 🔥 to nút */
+    border: none;
+    border-radius: 8px;
+    text-align: left;
+    background: #eef1f5;
+    transition: 0.3s;
+    font-size: 17px; /* 🔥 chữ to */
+}
+
+button:hover {
+    background: #dfe6ee;
+}
+.correct {
+    background: #c8f7c5 !important;
+    color: green;
+    font-weight: bold;
+}
+.wrong {
+    background: #f7c5c5 !important;
+    color: red;
+    font-weight: bold;
+}
+.score {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+.progress {
+    background: #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+.progress-bar {
+    height: 10px;
+    width: 0%;
+    background: #4CAF50;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h2>Bài trắc nghiệm</h2>
+
+<div class="score" id="score">Điểm: 0</div>
+
+<div class="progress">
+    <div class="progress-bar" id="progress"></div>
+</div>
+
+<div id="quiz"></div>
+</div>
+
+<script>
+
+// 🔀 Shuffle chuẩn
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+let score = 0;
+let answered = 0;
+
+// 📌 DÁN CÂU HỎI VÀO ĐÂY
+const questions = [
+  {
+    "q": "Đồng chí cho biết Đại hội Đại biểu toàn quốc lần thứ XIV diễn ra thời gian nào?",
+    "answers": [
+      "Từ ngày 15/01 đến 20/01/2026",
+      "Từ ngày 16/01 đến 20/01/2026",
+      "Từ ngày 19/01 đến 25/01/2026",
+      "Từ ngày 20/01 đến 25/01/2026"
+    ],
+    "correct": 2
+  },
+  {
+    "q": "Đồng chí cho biết phương châm Đại hội Đại biểu toàn quốc lần thứ XIV của Đảng?",
+    "answers": [
+      "Đoàn Kết - Đổi mới - Kỷ cương - Đột phá - Phát triển",
+      "Đoàn Kết - Đổi mới - Kỷ cương - Sáng tạo - Phát triển",
+      "Đoàn Kết - Dân chủ - Kỷ cương - Đột phá - Phát triển",
+      "Đoàn Kết - Dân chủ - Kỷ cương - Sáng tạo - Phát triển"
+    ],
+    "correct": 2
+  },
+  {
+    "q": "Đồng chí cho biết có bao nhiêu đại biểu tham gia Đại hội Đại biểu toàn quốc lần thứ XIV của Đảng?",
+    "answers": [
+      "1.585 đại biểu",
+      "1.586 đại biểu",
+      "1.588 đại biểu",
+      "1.590 đại biểu"
+    ],
+    "correct": 2
+  },
+  {
+    "q": "Đồng chí cho biết chủ đề Đại hội Đại biểu toàn quốc lần thứ XIV của Đảng?",
+    "answers": [
+      "“Dưới lá cờ vẻ vang của Đảng, chung sức, đồng lòng quyết tâm thực hiện thắng lợi các mục tiêu phát triển đất nước đến năm 2030; tự tin, tiến mạnh trong kỷ nguyên vươn mình của dân tộc, vì hoà bình, độc lập, dân chủ, giàu mạnh, phồn vinh, văn minh, hạnh phúc, vững bước đi lên chủ nghĩa xã hội”.",
+      "“Dưới lá cờ vẻ vang của Đảng, chung sức, đồng lòng quyết tâm thực hiện thắng lợi các mục tiêu phát triển đất nước đến năm 2030; tự cường, tự tin, tiến mạnh trong kỷ nguyên vươn mình của dân tộc, vì hoà bình, độc lập, dân chủ, giàu mạnh, phồn vinh, văn minh, hạnh phúc, vững bước đi lên chủ nghĩa xã hội”.",
+      "“Dưới lá cờ vẻ vang của Đảng, chung sức, đồng lòng quyết tâm thực hiện thắng lợi các mục tiêu phát triển đất nước đến năm 2045; tự cường, tự tin, tiến mạnh trong kỷ nguyên vươn mình của dân tộc, vì hoà bình, độc lập, dân chủ, giàu mạnh, phồn vinh, văn minh, hạnh phúc, vững bước đi lên chủ nghĩa xã hội”.",
+      "“Dưới lá cờ vẻ vang của Đảng, chung sức, đồng lòng quyết tâm thực hiện thắng lợi các mục tiêu phát triển đất nước đến năm 2045; tự tin, tiến mạnh trong kỷ nguyên vươn mình của dân tộc, vì hoà bình, độc lập, dân chủ, giàu mạnh, phồn vinh, văn minh, hạnh phúc, vững bước đi lên chủ nghĩa xã hội”."
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Đồng chí cho biết thời gian tổ chức Đại hội Đảng bộ Quân đội lần thứ XII, nhiệm kỳ 2025 - 2030?",
+    "answers": [
+      "Từ ngày 25/9 đến ngày 29/9/2025",
+      "Từ ngày 26/9 đến ngày 30/9/2025",
+      "Từ ngày 29/9 đến ngày 02/10/2025",
+      "Từ ngày 30/9 đến ngày 03/10/2025"
+    ],
+    "correct": 2
+  },
+  {
+    "q": "Đồng chí cho biết phương châm Đại hội Đảng bộ Quân đội lần thứ XII, nhiệm kỳ 2025 - 2030?",
+    "answers": [
+      "“Đoàn kết - Mẫu mực - Kỷ cương - Sáng tạo - Đột phá - Phát triển”",
+      "“Đoàn kết - Mẫu mực - Kỷ cương - Kiên định - Đột phá - Phát triển”",
+      "“Đoàn kết - Dân chủ - Kỷ cương - Sáng tạo - Đột phá - Phát triển”",
+      "“Đoàn kết - Dân chủ - Kỷ cương - Kiên định - Đột phá - Phát triển”"
+    ],
+    "correct": 3
+  },
+  {
+    "q": "Đồng chí cho biết kết quả bầu Đại biểu Đại hội Đảng bộ Quân đội dự Đại hội đại biểu toàn quốc lần thứ XIV của Đảng?",
+    "answers": [
+      "Bầu 48 đồng chí (45 đại biểu chính thức, 3 đại biểu dự khuyết) và 15 đại biểu đương nhiên.",
+      "Bầu 48 đồng chí (45 đại biểu chính thức, 3 đại biểu dự khuyết) và 16 đại biểu đương nhiên.",
+      "Bầu 50 đồng chí (45 đại biểu chính thức, 5 đại biểu dự khuyết) và 15 đại biểu đương nhiên.",
+      "Bầu 50 đồng chí (45 đại biểu chính thức, 5 đại biểu dự khuyết) và 16 đại biểu đương nhiên."
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Đồng chí cho biết Nghị quyết Đại hội Đảng bộ Quân đội nhiệm kỳ 2025 - 2030 đã xác định những nhóm nội dung nào?",
+    "answers": [
+      "Xác định 9 mục tiêu chủ yếu, 3 khâu đột phá, 10 nhiệm vụ và giải pháp lãnh đạo thực hiện nhiệm vụ quân sự, quốc phòng, cùng 7 nhiệm vụ, giải pháp xây dựng Đảng bộ Quân đội.",
+      "Xác định 10 mục tiêu chủ yếu, 5 khâu đột phá, 10 nhiệm vụ và giải pháp lãnh đạo thực hiện nhiệm vụ quân sự, quốc phòng, cùng 7 nhiệm vụ, giải pháp xây dựng Đảng bộ Quân đội.",
+      "Xác định 9 mục tiêu chủ yếu, 3 khâu đột phá, 10 nhiệm vụ và giải pháp lãnh đạo thực hiện nhiệm vụ quân sự, quốc phòng, cùng 7 nhiệm vụ, giải pháp xây dựng Đảng bộ Quân đội.",
+      "Xác định 10 mục tiêu chủ yếu, 3 khâu đột phá, 10 nhiệm vụ và giải pháp lãnh đạo thực hiện nhiệm vụ quân sự, quốc phòng, cùng 7 nhiệm vụ, giải pháp xây dựng Đảng bộ Quân đội."
+    ],
+    "correct": 2
+  },
+  {
+    "q": "Đồng chí cho biết Đại hội Đại biểu Đảng bộ Quân khu 4 lần thứ XII, nhiệm kỳ 2025 - 2030 diễn ra vào thời gian nào?",
+    "answers": [
+      "Từ ngày 18/8 đến 20/8/2025.",
+      "Từ ngày 19/8 đến 21/8/2025.",
+      "Từ ngày 20/8 đến 22/8/2025.",
+      "Từ ngày 21/8 đến 25/8/2025."
+    ],
+    "correct": 2
+  },
+  {
+    "q": "Đồng chí cho biết phương châm Đại hội Đại biểu Đảng bộ Quân khu 4 lần thứ XII, nhiệm kỳ 2025 - 2030 là gì?",
+    "answers": [
+      "“Đoàn kết - Mẫu mực - Kỷ cương - Đổi mới - Phát triển”",
+      "“Đoàn kết - Mẫu mực - Sáng tạo - Đổi mới - Phát triển”",
+      "“Đoàn kết - Dân chủ - Sáng tạo - Đổi mới - Phát triển”",
+      "“Đoàn kết - Dân chủ - Kỷ cương - Đổi mới - Phát triển”"
+    ],
+    "correct": 3
+  },
+  {
+    "q": "Đồng chí cho biết có bao nhiêu đại biểu tham gia Đại hội Đại biểu Đảng bộ Quân khu 4 lần thứ XII, nhiệm kỳ 2025 - 2030?",
+    "answers": [
+      "247 đại biểu",
+      "248 đại biểu",
+      "249 đại biểu",
+      "250 đại biểu"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Đồng chí cho biết chủ đề Đại hội Đại biểu Đảng bộ Quân khu 4 lần thứ XII, nhiệm kỳ 2025 - 2030 là gì?",
+    "answers": [
+      "\"Phát huy truyền thống Quân khu 4 anh hùng, xây dựng Đảng bộ trong sạch, vững mạnh, lực lượng vũ trang Quân khu tinh, gọn, mạnh; phòng thủ Quân khu vững chắc, quốc phòng toàn dân vững mạnh, góp phần thực hiện thắng lợi nhiệm vụ xây dựng và bảo vệ vững chắc Tổ quốc Việt Nam xã hội chủ nghĩa\".",
+      "\"Phát huy truyền thống Quân khu 4 anh hùng, xây dựng Đảng bộ trong sạch, vững mạnh toàn diện, lực lượng vũ trang Quân khu tinh, gọn, mạnh; phòng thủ Quân khu vững chắc, quốc phòng toàn dân vững mạnh, góp phần thực hiện thắng lợi nhiệm vụ xây dựng và bảo vệ vững chắc Tổ quốc Việt Nam xã hội chủ nghĩa\".",
+      "\"Phát huy truyền thống Quân khu 4 anh hùng, xây dựng Đảng bộ trong sạch, vững mạnh toàn diện, “mẫu mực tiêu biểu”, lực lượng vũ trang Quân khu tinh, gọn, mạnh; phòng thủ Quân khu vững chắc, quốc phòng toàn dân vững mạnh, góp phần thực hiện thắng lợi nhiệm vụ xây dựng và bảo vệ vững chắc Tổ quốc Việt Nam xã hội chủ nghĩa\".",
+      "\"Phát huy truyền thống Quân khu 4 anh hùng, xây dựng Đảng bộ Quân khu trong sạch, vững mạnh, lực lượng vũ trang Quân khu tinh, gọn, mạnh; phòng thủ Quân khu vững chắc, quốc phòng toàn dân vững mạnh, góp phần thực hiện thắng lợi nhiệm vụ xây dựng và bảo vệ vững chắc Tổ quốc Việt Nam xã hội chủ nghĩa\"."
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Đồng chí cho biết Đại hội Đại biểu Đảng bộ Quân khu 4 lần thứ XII, nhiệm kỳ 2025 - 2030 đã bầu Ban Chấp hành gồm bao nhiêu đồng chí?",
+    "answers": [
+      "Đại hội đã bầu Ban Chấp hành Đảng bộ Quân khu 4 nhiệm kỳ 2025-2030 gồm 17 đồng chí.",
+      "Đại hội đã bầu Ban Chấp hành Đảng bộ Quân khu 4 nhiệm kỳ 2025-2030 gồm 18 đồng chí.",
+      "Đại hội đã bầu Ban Chấp hành Đảng bộ Quân khu 4 nhiệm kỳ 2025-2030 gồm 19 đồng chí.",
+      "Đại hội đã bầu Ban Chấp hành Đảng bộ Quân khu 4 nhiệm kỳ 2025-2030 gồm 20 đồng chí."
+    ],
+    "correct": 2
+  },
+  {
+    "q": "Đồng chí cho biết thời gian diễn ra Đại hội Đại biểu Đảng bộ Sư đoàn lần thứ XIII, nhiệm kỳ 2025 - 2030?",
+    "answers": [
+      "Từ ngày 23 đến 24/5/2025",
+      "Từ ngày 24 đến 25/5/2025",
+      "Từ ngày 25 đến 26/5/2025",
+      "Từ ngày 26 đến 27/5/2025"
+    ],
+    "correct": 3
+  },
+  {
+    "q": "Đồng chí cho biết Đại hội Đại biểu Đảng bộ Sư đoàn lần thứ XIII, nhiệm kỳ 2025 - 2030 đã bầu Ban Chấp hành gồm bao nhiêu đồng chí?",
+    "answers": [
+      "Đại hội đã bầu Ban Chấp hành Đảng bộ nhiệm kỳ 2025 - 2030 gồm 13 đồng chí",
+      "Đại hội đã bầu Ban Chấp hành Đảng bộ nhiệm kỳ 2025 - 2030 gồm 15 đồng chí",
+      "Đại hội đã bầu Ban Chấp hành Đảng bộ nhiệm kỳ 2025 - 2030 gồm 17 đồng chí",
+      "Đại hội đã bầu Ban Chấp hành Đảng bộ nhiệm kỳ 2025 - 2030 gồm 20 đồng chí"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Đồng chí cho biết Đại hội Đại biểu Đảng bộ Sư đoàn lần thứ XIII, nhiệm kỳ 2025 - 2030 đã bầu bao nhiêu đại biểu dự Đại hội Đảng bộ Quân khu lần thứ XII?",
+    "answers": [
+      "Bầu đoàn đại biểu đi dự Đại hội Đảng bộ Quân khu lần thứ XII gồm 27 đại biểu chính thức, 3 đại biểu dự khuyết.",
+      "Bầu đoàn đại biểu đi dự Đại hội Đảng bộ Quân khu lần thứ XII gồm 28 đại biểu chính thức, 3 đại biểu dự khuyết.",
+      "Bầu đoàn đại biểu đi dự Đại hội Đảng bộ Quân khu lần thứ XII gồm 29 đại biểu chính thức, 3 đại biểu dự khuyết.",
+      "Bầu đoàn đại biểu đi dự Đại hội Đảng bộ Quân khu lần thứ XII gồm 30 đại biểu chính thức, 3 đại biểu dự khuyết."
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Đồng chí cho biết khâu đột phá thứ nhất được xác định trong Nghị quyết Đại hội Đại biểu Đảng bộ Sư đoàn lần thứ XIII, nhiệm kỳ 2025 - 2030 là gì?",
+    "answers": [
+      "Trình độ, khả năng sẵn sàng chiến đấu, chất lượng huấn luyện, xây dựng chính quy, chấp hành kỷ luật, an toàn quân đội",
+      "Trình độ, khả năng sẵn sàng chiến đấu, chất lượng huấn luyện, diễn tập, xây dựng chính quy, chấp hành kỷ luật, an toàn quân đội",
+      "Nâng cao trình độ, khả năng sẵn sàng chiến đấu, chất lượng huấn luyện, xây dựng chính quy, chấp hành kỷ luật, an toàn quân đội",
+      "Nâng cao trình độ, khả năng sẵn sàng chiến đấu, chất lượng huấn luyện, diễn tập xây dựng chính quy, chấp hành kỷ luật, an toàn quân đội"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Đồng chí cho biết khâu đột phá thứ hai được xác định trong Nghị quyết Đại hội Đại biểu Đảng bộ Sư đoàn lần thứ XIII, nhiệm kỳ 2025 - 2030 là gì?",
+    "answers": [
+      "Cải cách hành chính, chuyển đổi số và ứng dụng khoa học công nghệ",
+      "Cải cách hành chính, bình dân học vụ số và ứng dụng khoa học công nghệ",
+      "Đẩy mạnh cải cách hành chính, chuyển đổi số và ứng dụng khoa học công nghệ",
+      "Đẩy mạnh cải cách hành chính, bình dân học vụ số và ứng dụng khoa học công nghệ"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Đồng chí cho biết khâu đột phá thứ ba được xác định trong Nghị quyết Đại hội Đại biểu Đảng bộ Sư đoàn lần thứ XIII, nhiệm kỳ 2025 - 2030 là gì?",
+    "answers": [
+      "Xây dựng đội ngũ cán bộ các cấp đủ phẩm chất, năng lực đáp ứng yêu cầu nhiệm vụ.",
+      "Xây dựng đội ngũ cán bộ các cấp đủ phẩm chất, năng lực đáp ứng yêu cầu nhiệm vụ, nhất là cán bộ chủ trì các cấp.",
+      "Tích cực xây dựng đội ngũ cán bộ các cấp đủ phẩm chất, năng lực đáp ứng yêu cầu nhiệm vụ.",
+      "Tích cực xây dựng đội ngũ cán bộ các cấp đủ phẩm chất, năng lực đáp ứng yêu cầu nhiệm vụ, nhất là cán bộ chủ trì các cấp."
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Đồng chí cho biết thành tích của Sư đoàn trong phong trào thi đua Quyết thắng giai đoạn 2020 - 2025?",
+    "answers": [
+      "Năm 2020, 2022 Sư đoàn được tặng Cờ thi đua của Bộ Quốc Phòng, năm 2021, 2024, 2025 được tặng Cờ thi đua của Thủ tướng Chính phủ.",
+      "Năm 2020, 2022 Sư đoàn được tặng Cờ thi đua của Bộ Quốc Phòng, năm 2023, 2024, 2025 được tặng Cờ thi đua của Thủ tướng Chính phủ.",
+      "Năm 2020, 2023 Sư đoàn được tặng Cờ thi đua của Bộ Quốc Phòng, năm 2021, 2024, 2025 được tặng Cờ thi đua của Thủ tướng Chính phủ.",
+      "Năm 2020, 2021 Sư đoàn được tặng Cờ thi đua của Bộ Quốc Phòng, năm 2023, 2024, 2025 được tặng Cờ thi đua của Thủ tướng Chính phủ."
+    ],
+    "correct": 2
+  },
+  {
+    "q": "Đồng chí cho biết thời gian diễn ra Hội nghị tổng kết hoạt động công tác đoàn và phong trào thành niên Sư đoàn giai đoạn 2022 - 2025?",
+    "answers": [
+      "Ngày 16/10/2025",
+      "Ngày 17/10/2025",
+      "Ngày 18/10/2025",
+      "Ngày 19/10/2025"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Đồng chí cho biết sự kiện nổi bật thứ 5 trong 10 nét nổi bật của Sư đoàn trong năm 2025?",
+    "answers": [
+      "Tổ chức lực lượng tham gia phòng chống lụt bão, khắc phục hậu quả thiên tai trên địa bàn chặt chẽ, an toàn, được cấp trên, cấp ủy, chính quyền và Nhân dân ghi nhận, để lại ấn tượng sâu sắc.",
+      "Tham gia các ngày lễ kỷ niệm 50 năm Ngày giải phóng hoàn toàn miền Nam, thống nhất đất nước; 80 năm Cách mạng tháng Tám và Quốc khánh nước Cộng hòa xã hội chủ nghĩa Việt Nam.",
+      "Tổ chức Lễ kỷ niệm 70 năm Ngày truyền thống Sư đoàn và đón nhận Huân chương Bảo vệ Tổ quốc hạng Ba thành công tốt đẹp, để lại nhiều ấn tượng sâu sắc với lãnh đạo, chỉ huy các cấp, các thế hệ cán bộ, chiến sĩ Sư đoàn qua các thời kỳ.",
+      "Tổ chức Đại hội Đại biểu Đảng bộ Sư đoàn lần thứ XIII, nhiệm kỳ 2025 - 2030 làm trước cho Thường vụ Đảng ủy Quân khu rút kinh nghiệm thành công cả về nội dung và nhân sự."
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Đồng chí cho biết sự kiện nổi bật thứ 2 trong 10 kết quả nổi bật của Sư đoàn trong năm 2025?",
+    "answers": [
+      "Tổ chức lực lượng tham gia phòng chống lụt bão, khắc phục hậu quả thiên tai trên địa bàn chặt chẽ, an toàn, được cấp trên, cấp ủy, chính quyền và Nhân dân ghi nhận, để lại ấn tượng sâu sắc.",
+      "Tham gia các ngày lễ kỷ niệm 50 năm Ngày giải phóng hoàn toàn miền Nam, thống nhất đất nước; 80 năm Cách mạng tháng Tám và Quốc khánh nước Cộng hòa xã hội chủ nghĩa Việt Nam.",
+      "Tổ chức Lễ kỷ niệm 70 năm Ngày truyền thống Sư đoàn và đón nhận Huân chương Bảo vệ Tổ quốc hạng Ba thành công tốt đẹp, để lại nhiều ấn tượng sâu sắc với lãnh đạo, chỉ huy các cấp, các thế hệ cán bộ, chiến sĩ Sư đoàn qua các thời kỳ.",
+      "Tổ chức Đại hội Đại biểu Đảng bộ Sư đoàn lần thứ XIII, nhiệm kỳ 2025 - 2030 làm trước cho Thường vụ Đảng ủy Quân khu rút kinh nghiệm thành công cả về nội dung và nhân sự."
+    ],
+    "correct": 2
+  },
+  {
+    "q": "Đồng chí cho biết thành tích của Sư đoàn trong thực hiện Phong trào thi đua Quyết thắng năm 2025?",
+    "answers": [
+      "Toàn Sư đoàn có 350 tập thể và 1.948 cá nhân được các cấp khen thưởng. 01 Trung đoàn được tặng Cờ thi đua của Quân khu; 02 Trung đoàn được tặng Cờ thi đua của Bộ Quốc phòng. Sư đoàn được tặng Cờ thi đua của Chính phủ.",
+      "Toàn Sư đoàn có 353 tập thể và 1.950 cá nhân được các cấp khen thưởng. 01 Trung đoàn được tặng Cờ thi đua của Quân khu; 02 Trung đoàn được tặng Cờ thi đua của Bộ Quốc phòng. Sư đoàn được tặng Cờ thi đua của Chính phủ.",
+      "Toàn Sư đoàn có 353 tập thể và 1.948 cá nhân được các cấp khen thưởng. 01 Trung đoàn được tặng Cờ thi đua của Quân khu; 02 Trung đoàn được tặng Cờ thi đua của Bộ Quốc phòng. Sư đoàn được tặng Cờ thi đua của Chính phủ.",
+      "Toàn Sư đoàn có 350 tập thể và 1.948 cá nhân được các cấp khen thưởng. 02 Trung đoàn được tặng Cờ thi đua của Quân khu; 01 Trung đoàn được tặng Cờ thi đua của Bộ Quốc phòng. Sư đoàn được tặng Cờ thi đua của Chính phủ."
+    ],
+    "correct": 2
+  },
+  {
+    "q": "Đồng chí cho biết thành tích của Sư đoàn trong vòng chung kết Cuộc thi “Tìm hiểu 80 năm Ngày truyền thống LLVT Quân khu”?",
+    "answers": [
+      "01 giải Nhất, 01 giải Nhì, 01 giải Ba, Sư đoàn được tặng Bằng khen Đơn vị Xuất sắc.",
+      "01 giải Nhất, 01 giải Nhì, 02 giải Ba, Sư đoàn được tặng Bằng khen Đơn vị Xuất sắc.",
+      "01 giải Nhất, 02 giải Nhì, 02 giải Ba, Sư đoàn được tặng Bằng khen Đơn vị Xuất sắc.",
+      "01 giải Nhất, 02 giải Nhì, 03 giải Ba, Sư đoàn được tặng Bằng khen Đơn vị Xuất sắc."
+    ],
+    "correct": 2
+  },
+  {
+    "q": "Đồng chí cho biết Nhà tưởng niệm Sư đoàn ghi danh bao nhiêu anh hùng liệt sĩ?",
+    "answers": [
+      "11.009 anh hùng liệt sĩ",
+      "11.059 anh hùng liệt sĩ",
+      "11.089 anh hùng liệt sĩ",
+      "11.099 anh hùng liệt sĩ"
+    ],
+    "correct": 3
+  },
+  {
+    "q": "Đồng chí cho biết Truyền thống của Lực lượng vũ trang Quân khu 4 vinh dự được Chủ tịch Hồ Chí Minh tặng bao nhiêu điều khen?",
+    "answers": [
+      "3 điều khen",
+      "4 điều khen",
+      "5 điều khen",
+      "6 điều khen"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Đồng chí cho biết “Biên giới quốc gia của nước Cộng hòa xã hội chủ nghĩa Việt Nam” được quy định như thế nào trong Luật Biên giới quốc gia Việt Nam?",
+    "answers": [
+      "Biên giới quốc gia của nước Cộng hòa xã hội chủ nghĩa Việt Nam là đường và mặt thẳng đứng theo đường đó để xác định giới hạn lãnh thổ đất liền, các đảo, quần đảo trong đó có quần đảo Hoàng Sa và quần đảo Trường Sa, vùng biển, lòng đất, vùng trời của nước Cộng hòa xã hội chủ nghĩa Việt Nam.",
+      "Biên giới quốc gia của nước Cộng hòa xã hội chủ nghĩa Việt Nam là cơ sở pháp lý để quản lý, bảo vệ biên giới quốc gia; giữ gìn an ninh, trật tự, an toàn xã hội ở khu vực biên giới, tạo môi trường hòa bình, ổn định để phát triển đất nước.",
+      "Biên giới quốc gia của nước Cộng hòa xã hội chủ nghĩa Việt Nam là cơ sở pháp lý để quản lý, bảo vệ biên giới quốc gia; cơ sở để giải quyết các tranh chấp, bất đồng về biên giới, lãnh thổ giữa Việt Nam với các nước hữu quan.",
+      "Biên giới quốc gia của nước Cộng hòa xã hội chủ nghĩa Việt Nam là ranh giới phân định lãnh thổ quốc gia này với quốc gia khác; để xác định giới hạn lãnh thổ đất liền, các đảo, quần đảo trong đó có quần đảo Hoàng Sa và quần đảo Trường Sa, vùng biển, lòng đất, vùng trời của nước Cộng hòa xã hội chủ nghĩa Việt Nam."
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Đồng chí cho biết quan điểm của Đảng và Nhà nước ta về quản lý, bảo vệ biên giới quốc gia nước Cộng hòa xã hội chủ nghĩa Việt Nam trong tình hình mới?",
+    "answers": [
+      "Sự nghiệp bảo vệ biên giới quốc gia đặt dưới sự lãnh đạo tuyệt đối, trực tiếp về mọi mặt của Đảng, thường xuyên, trực tiếp là Bộ Chính trị, Ban Bí thư.",
+      "Quản lý, bảo vệ biên giới quốc gia là nhiệm vụ trọng yếu, thường xuyên của toàn Đảng, toàn dân, toàn quân, của cả hệ thống chính trị và cả nước.",
+      "Không sử dụng khu vực biên giới và không cho nước ngoài sử dụng khu vực biên giới Việt Nam để chống phá, can thiệp vào nước khác.",
+      "Tổ chức lực lượng rộng khắp, mạng lưới liên hoàn, khép kín; tiến hành nhiều biện pháp tổng hợp, nắm chắc tình hình địa bàn, biên giới, đối tượng từ sớm, từ xa; kịp thời xử lý thắng lợi mọi tình huống ở khu vực biên giới."
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Đồng chí cho biết tên đầy đủ của Đề án 1371 là gì?",
+    "answers": [
+      "Đề án “Phát huy vai trò, trách nhiệm của lực lượng Quân đội nhân dân tham gia công tác phổ biến, giáo dục pháp luật, vận động Nhân dân chấp hành pháp luật tại cơ sở giai đoạn 2021 - 2027”",
+      "Đề án “Phát huy vai trò của lực lượng Quân đội nhân dân tham gia công tác phổ biến, quán triệt, giáo dục pháp luật, vận động Nhân dân chấp hành pháp luật tại cơ sở giai đoạn 2021 - 2027”",
+      "Đề án ‘Phát huy vai trò, trách nhiệm của lực lượng Quân đội nhân dân tham gia công tác phổ biến, quán triệt, giáo dục pháp luật, vận động Nhân dân chấp hành pháp luật tại cơ sở giai đoạn 2021 - 2027”",
+      "Đề án ‘Phát huy vai trò của lực lượng Quân đội nhân dân tham gia công tác phổ biến, giáo dục pháp luật, vận động Nhân dân chấp hành pháp luật tại cơ sở giai đoạn 2021 - 2027”"
+    ],
+    "correct": 3
+  },
+  {
+    "q": "Đồng chí cho biết thời gian thực hiện Giai đoạn 1 của Đề án 1371?",
+    "answers": [
+      "Từ tháng 7/2021 đến hết năm 2024",
+      "Từ tháng 8/2021 đến hết năm 2024",
+      "Từ tháng 9/2021 đến hết năm 2024",
+      "Từ tháng 10/2021 đến hết năm 2024"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Đồng chí cho biết thời gian thực hiện Giai đoạn 2 của Đề án 1371?",
+    "answers": [
+      "Từ năm 2025 đến năm 2027",
+      "Từ năm 2025 đến đầu năm 2027",
+      "Từ năm 2025 đến tháng 10 năm 2027",
+      "Từ năm 2025 đến hết năm 2027"
+    ],
+    "correct": 3
+  },
+  {
+    "q": "Đồng chí cho biết Nghị quyết số 3488-NQ/QUTW ban hành ngày, tháng, năm nào?",
+    "answers": [
+      "09/02/2025",
+      "09/01/2025",
+      "29/01/2025",
+      "29/02/2025"
+    ],
+    "correct": 2
+  },
+  {
+    "q": "Đồng chí cho biết nguyên tắc quản lý, bảo vệ biên giới quốc gia trong tình hình mới?",
+    "answers": [
+      "Tuân thủ Hiến pháp, pháp luật Việt Nam, luật pháp quốc tế và các điều ước quốc tế về biên giới quốc gia mà Việt Nam đã ký kết hoặc gia nhập.",
+      "Phát huy sức mạnh toàn dân tộc kết hợp với sức mạnh thời đại, dựa vào nội lực là chính, kết hợp với tăng cường, mở rộng hợp tác quốc tế.",
+      "Kiên quyết, kiên trì đấu tranh bảo vệ vững chắc chủ quyền, thống nhất, toàn vẹn lãnh thổ của Tổ quốc ở khu vực biên giới.",
+      "Quản lý, bảo vệ biên giới quốc gia đặt trong tổng thể hai nhiệm vụ chiến lược xây dựng và bảo vệ Tổ quốc."
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Đồng chí cho biết Chỉ thị số 05-CT/TW ngày 15/5/2016 của Bộ Chính trị xác định: Phải làm cho tư tưởng, đạo đức, phong cách của Hồ Chí Minh thật sự trở thành...?",
+    "answers": [
+      "Công việc thường xuyên của cấp uỷ, tổ chức đảng, chính quyền, mặt trận Tổ quốc Việt Nam và tổ chức chính trị - xã hội các cấp",
+      "Nền tảng tinh thần vững chắc của đời sống xã hội",
+      "Việc làm tự giác của mỗi cán bộ, đảng viên",
+      "Nền tảng tinh thần vững chắc của Đảng, Quân đội và toàn dân"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Đồng chí cho biết mục đích của Hướng dẫn số 1136/HD-TH của Cục Tuyên huấn về bài giảng chính trị?",
+    "answers": [
+      "Thống nhất vị trí, vai trò công tác chuẩn bị, thông qua và phê duyệt bài giảng chính trị, làm cơ sở để tổ chức giảng dạy chính trị cho các đối tượng",
+      "Thống nhất quy trình, phương pháp chuẩn bị, thông qua và phê duyệt bài giảng chính trị, làm cơ sở để tổ chức giảng dạy chính trị cho các đối tượng",
+      "Thống nhất nội dung, hình thức chuẩn bị, thông qua và phê duyệt bài giảng chính trị, làm cơ sở để tổ chức giảng dạy chính trị cho các đối tượng",
+      "Thống nhất thời gian, địa điểm chuẩn bị, thông qua và phê duyệt bài giảng chính trị, làm cơ sở để tổ chức giảng dạy chính trị cho các đối tượng"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Đồng chí cho biết Nghị quyết số 3488-NQ/QUTW xác định mấy nhiệm vụ, giải pháp thực hiện?",
+    "answers": [
+      "5 nhiệm vụ, giải pháp",
+      "6 nhiệm vụ, giải pháp",
+      "7 nhiệm vụ, giải pháp",
+      "8 nhiệm vụ, giải pháp"
+    ],
+    "correct": 2
+  },
+  {
+    "q": "Đồng chí cho biết mục đích ban hành Hướng dẫn 1504/HD-CT ngày 16/8/2018 về mô hình 'Một tăng, một giảm, ba thực chất'?",
+    "answers": [
+      "Đổi mới hình thức, phương pháp giảng dạy, kiểm tra, đánh giá chính xác kết quả nghiên cứu, học tập của cán bộ, chiến sĩ; góp phần nâng cao chất lượng, hiệu quả công tác giáo dục chính trị, quản lý tư tưởng đi vào chiều sâu, vững chắc.",
+      "Đổi mới phương pháp giảng dạy, kiểm tra, đánh giá chính xác nhận thức của cán bộ, chiến sĩ; góp phần nâng cao chất lượng, hiệu quả công tác giáo dục chính trị, quản lý tư tưởng đi vào chiều sâu, vững chắc.",
+      "Đổi mới hình thức, phương pháp giảng dạy, kiểm tra, đánh giá chính xác kết quả của cán bộ, chiến sĩ; góp phần nâng cao chất lượng, hiệu quả công tác giáo dục chính trị, quản lý tư tưởng đi vào chiều sâu, vững chắc.",
+      "Đổi mới phương pháp giảng dạy, kiểm tra, đánh giá chính xác kết quả nghiên cứu, học tập của cán bộ, chiến sĩ; góp phần nâng cao chất lượng, hiệu quả công tác giáo dục chính trị, quản lý tư tưởng đi vào chiều sâu, vững chắc."
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Đồng chí cho biết nội dung 'Một tăng' theo Hướng dẫn 1504/HD-CT?",
+    "answers": [
+      "Tăng thời gian học tập, nghiên cứu, thảo luận, trao đổi, hỏi đáp giữa người dạy với người học, xem băng hình bổ trợ, tham quan các mô hình trực quan sinh động, các khu di tích lịch sử, báo công nhà tưởng niệm các anh hùng liệt sĩ…",
+      "Tăng thời gian nghiên cứu, thảo luận, trao đổi, hỏi đáp giữa người dạy với người học, xem băng hình bổ trợ, tham quan các mô hình trực quan sinh động, các khu di tích lịch sử, báo công nhà tưởng niệm các anh hùng liệt sĩ…",
+      "Tăng thời gian học tập, nghiên cứu, ôn tập, thảo luận, kiểm tra và hoạt động bổ trợ, tham quan các mô hình trực quan sinh động, các khu di tích lịch sử, báo công nhà tưởng niệm các anh hùng liệt sĩ…",
+      "Tăng thời gian nghiên cứu, ôn tập, thảo luận, kiểm tra và hoạt động bổ trợ, tham quan các mô hình trực quan sinh động, các khu di tích lịch sử, báo công nhà tưởng niệm các anh hùng liệt sĩ…"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Đồng chí cho biết nội dung “Một giảm” theo Hướng dẫn1504 /HD-CT ngày 16/8/2018 của Phòng Chính trị Sư đoàn về mô hình “Một tăng, một giảm, ba thực chất” là gì?",
+    "answers": [
+      "Giảm thời gian lên lớp lý thuyết",
+      "Giảm thời gian ôn tập, thảo luận",
+      "Giảm thời gian ôn tập, kiểm tra",
+      "Giảm thời gian hoạt động bổ trợ"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Đồng chí cho biết nội dung “Ba thực chất” theo Hướng dẫn1504 /HD-CT ngày 16/8/2018?",
+    "answers": [
+      "Dạy thực chất; Học thực chất; Kiểm tra thực chất",
+      "Dạy thực chất; Học thực chất; Đánh giá thực chất",
+      "Dạy thực chất; Học thực chất; Ôn tập, kiểm tra thực chất",
+      "Dạy thực chất; Học thực chất; Kiểm tra, đánh giá thực chất"
+    ],
+    "correct": 3
+  },
+  {
+    "q": "Đồng chí cho biết số lượng thành viên Tổ Thi đua - khen thưởng cấp Đại đội, tiểu đoàn, trung đoàn, Sư đoàn và tương đương theo Thông tư 118/2023/TT/BQP?",
+    "answers": [
+      "Cấp đại đội không quá 05 đồng chí; cấp tiểu đoàn không quá 07 đồng chí; cấp trung đoàn không quá 15 đồng chí; cấp Sư đoàn không quá 17 đồng chí",
+      "Cấp đại đội không quá 04 đồng chí; cấp tiểu đoàn không quá 05 đồng chí; cấp trung đoàn không quá 10 đồng chí; cấp Sư đoàn không quá 15 đồng chí",
+      "Cấp đại đội không quá 04 đồng chí; cấp tiểu đoàn không quá 05 đồng chí; cấp trung đoàn không quá 15 đồng chí; cấp Sư đoàn không quá 17 đồng chí",
+      "Cấp đại đội không quá 05 đồng chí; cấp tiểu đoàn không quá 07 đồng chí; cấp trung đoàn không quá 10 đồng chí; cấp Sư đoàn không quá 15 đồng chí"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Đồng chí cho biết Lực lượng 47 thành lập ở cấp nào?",
+    "answers": [
+      "Từ Quân ủy Trung ương đến cấp trung đoàn (tương đương)",
+      "Từ cấp tiểu đoàn và tương đương trở lên",
+      "Cấp nào có Ban Chỉ đạo 94 (nay là Ban Chỉ đạo 35) thì cấp đó thành lập “Lực lượng 47”",
+      "Cấp sư đoàn, Bộ CHQS tỉnh, thành phố và Quân khu"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Đồng chí cho biết Đấu tranh trên không gian mạng trong Quân đội là nhiệm vụ của ai?",
+    "answers": [
+      "Là nhiệm vụ của cán bộ chính trị các cấp",
+      "Là nhiệm vụ của cấp ủy, chỉ huy các cấp",
+      "Là nhiệm vụ của cấp ủy, chỉ huy và của mọi tổ chức, mọi lực lượng trong toàn quân",
+      "Là nhiệm vụ của cơ quan chính trị các cấp"
+    ],
+    "correct": 2
+  },
+  {
+    "q": "Đồng chí cho biết Mục tiêu của hoạt động đấu tranh chống các quan điểm sai trái, thù địch, cơ hội chính trị trên không gian mạng trong Quân đội là gì?",
+    "answers": [
+      "Để bảo vệ Đảng, bảo vệ chế độ, chống “phi chính trị hóa” quân đội trong tình hình mới",
+      "Để đảm bảo an toàn thông tin mạng trong Quân đội",
+      "Để bảo vệ chính trị nội bộ và an toàn thông tin mạng trong Quân đội trong tình hình mới",
+      "Để bảo vệ bí mật Quân đội, bí mật quốc gia trong quá trình hội nhập, toàn cầu hóa hiện nay"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Đồng chí cho biết Hình thức đấu tranh trên không gian mạng ở các đơn vị huấn luyện, sẵn sàng chiến đấu là gì?",
+    "answers": [
+      "Đấu tranh trực tiếp với các luận điệu xuyên tạc, chống phá trên không gian mạng",
+      "Đấu tranh gián tiếp thông qua hình thức comment (bình luận) ngắn gọn, súc tích",
+      "Đấu tranh gián tiếp thông qua hình thức comment (bình luận), chia sẻ, lan tỏa các bài viết có nội dung tốt về đấu tranh chống quan điểm sai trái trên không gian mạng",
+      "Kết hợp chặt chẽ đấu tranh trực tiếp và đấu tranh gián tiếp chống các quan điểm sai trái trên không gian mạng"
+    ],
+    "correct": 2
+  },
+  {
+    "q": "Đồng chí cho biết Bảo vệ vững chắc Tổ quốc Việt Nam xã hội chủ nghĩa từ sớm, từ xa, trên tất cả các yếu tố cấu thành Tổ quốc gồm?",
+    "answers": [
+      "Đất liền, trên không, vũ trụ và không gian mạng",
+      "Đất liền, biển đảo, trên không, vũ trụ và không gian mạng",
+      "Đất liền, biển đảo, vũ trụ và không gian mạng",
+      "Đất liền, biển đảo, trên không, vũ trụ"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Đồng chí cho biết Theo Công ước Liên hợp quốc về Luật biển 1982 và Luật biển Việt Nam năm 2012 thì Việt Nam có các vùng biển nào?",
+    "answers": [
+      "04 vùng (nội thủy; lãnh hải; vùng tiếp giáp lãnh hải; vùng đặc quyền kinh tế)",
+      "05 vùng (nội thủy; lãnh hải; vùng tiếp giáp lãnh hải; vùng đặc quyền kinh tế; thềm lục địa)",
+      "06 vùng (đường cơ sở; nội thủy; lãnh hải; vùng tiếp giáp lãnh hải; vùng đặc quyền kinh tế; vùng thềm lục địa)",
+      "05 vùng (đường cơ sở; nội thủy; lãnh hải; vùng tiếp giáp lãnh hải; vùng đặc quyền kinh tế)"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Đồng chí cho biết vùng đặc quyền kinh tế của Việt Nam tính từ đường cơ sở ra phía biển bao nhiêu hải lý?",
+    "answers": [
+      "150 hải lý",
+      "200 hải lý",
+      "250 hải lý",
+      "300 hải lý"
+    ],
+    "correct": 1
+  }       
+];
+
+// 🔀 Trộn câu hỏi
+shuffle(questions);
+
+const quizDiv = document.getElementById("quiz");
+
+// 👉 Render câu hỏi
+questions.forEach((q, index) => {
+
+    const div = document.createElement("div");
+    div.classList.add("question");
+
+    const title = document.createElement("p");
+    title.innerHTML = "<b>Câu " + (index + 1) + ":</b> " + q.q;
+    div.appendChild(title);
+
+    // 👉 GẮN ĐÚNG/SAI + TRỘN ĐÁP ÁN
+    let answers = q.answers.map((a,i)=>({
+        text: a,
+        correct: i === q.correct
+    }));
+
+    shuffle(answers);
+
+    answers.forEach((ans, i) => {
+
+        const btn = document.createElement("button");
+        btn.innerText = String.fromCharCode(65+i) + ". " + ans.text;
+
+        btn.onclick = () => {
+
+            if(div.classList.contains("done")) return;
+            div.classList.add("done");
+
+            answered++;
+
+            if(ans.correct){
+                btn.classList.add("correct");
+                btn.innerText += " ✅";
+                score++;
+            } else {
+                btn.classList.add("wrong");
+                btn.innerText += " ❌";
+
+                // 👉 HIỆN ĐÁP ÁN ĐÚNG
+                const buttons = div.querySelectorAll("button");
+                answers.forEach((a, idx) => {
+                    if(a.correct){
+                        buttons[idx].classList.add("correct");
+                        buttons[idx].innerText += " ⭐";
+                    }
+                });
+            }
+
+            // 👉 CẬP NHẬT ĐIỂM
+            document.getElementById("score").innerText =
+                "Điểm: " + score + "/" + questions.length;
+
+            // 👉 PROGRESS BAR
+            document.getElementById("progress").style.width =
+                (answered / questions.length * 100) + "%";
+        };
+
+        div.appendChild(btn);
+    });
+
+    quizDiv.appendChild(div);
+});
+
+</script>
+
+</body>
+</html>
